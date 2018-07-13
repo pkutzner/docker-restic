@@ -1,7 +1,8 @@
-FROM golang:1.8.3-alpine
+FROM golang:1.10.3-alpine
 MAINTAINER Johan Smits <johan@smitsmail.net>
 
-ENV RESTIC_VERSION="0.8.2"
+ENV RESTIC_VERSION="0.9.1"
+ENV RCLONE_VERSION="v1.42"
 
 # Backup options
 ENV RESTIC_BACKUP_OPTIONS=""
@@ -25,18 +26,21 @@ ADD ./target/supervisor_restic.ini /etc/supervisor.d/restic.ini
 
 # Install the items
 RUN apk update \
-  && apk add ca-certificates wget supervisor gnupg \
+  && apk add ca-certificates wget supervisor gnupg unzip \
   && update-ca-certificates \
   && wget -O /tmp/restic-${RESTIC_VERSION}.tar.gz "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic-${RESTIC_VERSION}.tar.gz" \
-  && cd /tmp \
+  && wget -O /tmp/rclone-${RCLONE_VERSION}-linux-amd64.zip "https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip" \
   && tar -xf /tmp/restic-${RESTIC_VERSION}.tar.gz -C /tmp/ \
   && cd /tmp/restic-${RESTIC_VERSION} \
   && go run build.go \
   && mv restic /go/bin/restic \
+  && cd /tmp \
+  && unzip rclone-${RCLONE_VERSION}-linux-amd64.zip \
+  && mv /tmp/rclone-${RCLONE_VERSION}-linux-amd64/rclone /go/bin/rclone \
   && chmod +x /go/bin/start_cron.sh \
   && cd / \
   && mkdir -p /var/log/supervisor \
-  && rm -rf /tmp/restic* /var/cache/apk/*
+  && rm -rf /tmp/restic* /tmp/rclone* /var/cache/apk/*
 
 # Start the process
 CMD supervisord -c /etc/supervisord.conf
