@@ -23,6 +23,7 @@ ENV CRON_CLEANUP_EXPRESSION="15  0  0   *   *"
 # Script and config
 ADD ./target/start_cron.sh /go/bin
 ADD ./target/supervisor_restic.ini /etc/supervisor.d/restic.ini
+ADD ./target/restic-runner /go/bin
 
 # Install the items
 RUN apk update \
