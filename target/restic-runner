@@ -20,7 +20,12 @@
 
 # * Defaults
 
-config_dir=~/.config/backup/restic
+if [ -z $RR_CONF_DIR ]; then
+    config_dir="~/.config/backup/restic"
+else
+    config_dir="$RR_CONF_DIR"
+fi
+#config_dir="${RR_CONF_DIR:-~/.config/backup/restic}"
 
 # * Functions
 
@@ -49,13 +54,55 @@ function die {
 }
 function usage {
     cat <<EOF
-$0 [OPTIONS] ...?
+$0 --repo REPOSITORY [OPTIONS] COMMAND
 
-This does something cool!
-
-Options
+Options:
   -d, --debug  Print debug info
-  -h, --help   I need somebody!
+
+  -h, --help   This help
+
+  --set SET    SET to perform COMMAND on
+
+  --tag TAG    Perform COMMAND on all sets tagged with TAG
+
+  --added      Used with 'diff' command: Show only added paths
+                 May be used with --modified
+
+  --modified   Used with 'diff' command: Show only modified paths
+                 May be used with --added
+
+  --removed    Used with 'diff' command: Show only removed paths
+
+Commands:
+  backup
+               Runs a backup. By default calls Restic with these opts:
+                 --one-file-system
+                 --exclude-caches
+
+  check
+               Runs 'restic check' on the repo. The --set option may be
+               omitted, since it is meaningless for this command.
+
+  command COMMAND-STRING
+               Pass the specified command through to Restic. This is
+               useful for commands that do not have an equivalent in
+               restic-runner.
+
+  diff [SNAPSHOT1] [SNAPSHOT2]
+               Shows the diff between two snapshots. One or more snapshot
+               IDs may optionally be specified. If none are given, the
+               latest snapshot is compared with the one before it. If one
+               is given, it is compared with the latest.
+
+  expire
+               Automatically forget *and prune* snapshots according to the
+               configured policy.
+
+  init
+               Initialize the configured repo.
+
+  snapshot-ids
+               Print a list of snapshot IDs, one per line.
 EOF
 }
 function log {
