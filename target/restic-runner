@@ -21,8 +21,7 @@
 # * Defaults
 
 #config_dir=~/.config/backup/restic
-#config_dir="~/.config/restic-runner"
-config_dir="${RR_CONF_DIR:-/root/.config/restic-runner}"
+config_dir=~/.config/restic-runner
 
 # * Functions
 
@@ -98,8 +97,11 @@ Commands:
   init
                Initialize the configured repo.
 
+  snapshots
+               Print a list of all current snapshots IDs and timestamps
+
   snapshot-ids
-               Print a list of snapshot IDs, one per line.
+               Print a list of snapshot IDs **ONLY**, one per line.
 EOF
 }
 function log {
@@ -331,6 +333,17 @@ function expire {
     restic forget \
            $(tag) \
            --prune ${keep_policy[@]}
+}
+function restore {
+    log "RESTORING SNAPSHOT ${rest[0]}..."
+
+    restic restore -t ${rest[1]:-/data} --verify ${rest[0]}
+
+}
+function snapshots {
+    log "LISTING SNAPSHOTS..."
+
+    restic snapshots $(tag) -c
 }
 function passthrough {
     # Pass command through to restic.
