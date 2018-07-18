@@ -7,6 +7,11 @@ ENV RCLONE_VERSION="v1.42"
 # Backup options
 ENV RESTIC_BACKUP_OPTIONS=""
 
+# Rclone options
+# Base directory where rclone will look for its config
+#  e.g. $XDG_CONFIG_HOME/rclone/rclone.conf
+#ENV XDG_CONFIG_HOME="~/.config"
+
 # Cleanup params
 ENV RESTIC_CLEANUP_KEEP_DAILY=7
 ENV RESTIC_CLEANUP_KEEP_WEEKLY=5
@@ -23,10 +28,11 @@ ENV CRON_CLEANUP_EXPRESSION="15  0  0   *   *"
 # Script and config
 ADD ./target/start_cron.sh /go/bin
 ADD ./target/supervisor_restic.ini /etc/supervisor.d/restic.ini
+ADD ./target/restic-runner /go/bin
 
 # Install the items
 RUN apk update \
-  && apk add ca-certificates wget supervisor gnupg unzip \
+  && apk add bash bc ca-certificates coreutils wget supervisor gnupg unzip \
   && update-ca-certificates \
   && wget -O /tmp/restic-${RESTIC_VERSION}.tar.gz "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic-${RESTIC_VERSION}.tar.gz" \
   && wget -O /tmp/rclone-${RCLONE_VERSION}-linux-amd64.zip "https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip" \
