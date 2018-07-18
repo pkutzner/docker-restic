@@ -25,6 +25,9 @@ ENV CRON_BACKUP_EXPRESSION="15   3  *   *   *"
 # Fire at 00:15 on the first day of every month
 ENV CRON_CLEANUP_EXPRESSION="15  0  0   *   *"
 
+# Add the /go/bin path to $PATH
+ENV PATH="/go/bin:${PATH}"
+
 # Script and config
 ADD ./target/start_cron.sh /go/bin
 ADD ./target/supervisor_restic.ini /etc/supervisor.d/restic.ini
