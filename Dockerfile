@@ -1,5 +1,5 @@
 FROM golang:1.10.3-alpine
-MAINTAINER Johan Smits <johan@smitsmail.net>
+MAINTAINER Preston Kutzner <shizzlecash@gmail.com>
 
 ENV RESTIC_VERSION="0.9.1"
 ENV RCLONE_VERSION="v1.42"
