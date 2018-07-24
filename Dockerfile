@@ -22,9 +22,9 @@ ENV RESTIC_CLEANUP_OPTIONS="--prune"
 
 # Default interval times can be set in cron expression
 # Fire at 03:15 every day
-ENV CRON_BACKUP_EXPRESSION="15 3 * * *"
+ENV CRON_BACKUP_EXPRESSION="0 * * * *"
 # Fire at 00:15 on the first day of every month
-ENV CRON_CLEANUP_EXPRESSION="15 0 0 * *"
+ENV CRON_CLEANUP_EXPRESSION="15 0 * * *"
 
 # Script and config
 ADD ./target/start_cron.sh /go/bin
