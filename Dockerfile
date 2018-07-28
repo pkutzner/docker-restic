@@ -7,6 +7,9 @@ ENV RCLONE_VERSION="v1.42"
 # Backup options
 ENV RESTIC_BACKUP_OPTIONS=""
 
+# Enable cleanup cron job
+ENV RESTIC_CLEANUP="true"
+
 # Rclone options
 # Base directory where rclone will look for its config
 #  e.g. $XDG_CONFIG_HOME/rclone/rclone.conf
