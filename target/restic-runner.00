@@ -20,43 +20,8 @@
 
 # * Defaults
 
+#config_dir=~/.config/backup/restic
 config_dir=~/.config/restic-runner
-
-# Script locking.  Let's not run if we've already been run.
-LOCKDIR="/tmp/restic-runner-lock"
-PIDFILE="${LOCKDIR}/PID"
-
-# Exit codes and text
-ENO_SUCCESS=0; ETXT[0]="ENO_SUCCESS"
-ENO_GENERAL=1; ETXT[1]="ENO_GENERAL"
-ENO_LOCKFAIL=2; ETXT[2]="ENO_LOCKFAIL"
-ENO_RECVSIG=3; ETXT[3]="ENO_RECVSIG"
-
-trap 'ECODE=$?; echo "[restic-runner] Exit: ${ETXT[ECODE]}($ECODE)" >&2' 0
-echo -n '[restic-runner] Locking: ' >&2
-
-if mkdir "${LOCKDIR}" &>/dev/null; then
-    trap 'ECODE=$?; echo "[restic-runner] Removing lock. Exit: ${ETXT[ECODE]}($ECODE)" >&2; cleanup' 0
-    echo "$$" >"${PIDFILE}"
-    trap 'echo "[restic-runner] Killed by a signal." >&2; cleanup; exit ${ENO_RECVSIG}' 1 2 3 15
-    echo "success, installed signal handlers"
-else
-    OTHERPID="$(cat "${PIDFILE}")"
-    if [ $? != 0 ]; then
-        echo "lock failed, PID ${OTHERPID} is active" >&2
-        exit ${ENO_LOCKFAIL}
-    fi
-
-    if ! kill -0 ${OTHERPID} &>/dev/null; then
-        echo "removing stale lock of nonexistant PID ${OTHERPID}" >&2
-        rm -rf "${LOCKDIR}"
-        echo "[restic-runner]" restarting myself >&2
-        exec $0 $*
-    else
-        echo "lock failed, PID ${OTHERPID} is active" >&2
-        exit ${ENO_LOCKFAIL}
-    fi
-fi
 
 # * Functions
 
@@ -140,13 +105,12 @@ Commands:
 EOF
 }
 function log {
-    echo "LOG ($(date -R)): $@" >&2
+    echo "LOG ($(date --rfc-3339=seconds)): $@" >&2
 }
 
 function cleanup {
     # Remove temporary exclude file if it exists
     [[ -f $exclude_file ]] && rm -f "$exclude_file"
-    [[ -d $LOCKDIR ]] && rm -rf "$LOCKDIR"
 }
 
 # ** Helper functions
@@ -227,7 +191,9 @@ function human_duration {
     # $2 should be the later timestamp.  Timestamps should be strings
     # in any form that GNU date accepts.
 
-    local difference=$(( $2 - $1 ))
+    local ts1=$(date +%s --date "$1")
+    local ts2=$(date +%s --date "$2")
+    local difference=$(( $ts2 - $ts1 ))
 
     local hours=$(bc <<<"$difference / 60 / 60")
     local minutes=$(bc <<<"$difference / 60 % 60")
@@ -288,7 +254,7 @@ function backup {
     log "BACKING UP..."
 
     # Cleanup exclude file on exit
-    #trap cleanup EXIT INT TERM
+    trap cleanup EXIT INT TERM
 
     restic backup \
            --one-file-system \
@@ -393,11 +359,8 @@ function init {
 }
 
 # * Args
-OS=$(uname -s)
-[[ $OS = "FreeBSD" ]] && getoptbin="/usr/local/bin/getopt"
-[[ $OS = "Linux" ]] && getoptbin="/usr/bin/getopt"
 
-args=$($getoptbin -n "$0" -o dh -l debug,repo:,set:,tag:,help,added,modified,removed -- "$@") || exit 1
+args=$(getopt -n "$0" -o dh -l debug,repo:,set:,tag:,help,added,modified,removed -- "$@") || exit 1
 eval set -- "$args"
 
 while true
@@ -490,7 +453,7 @@ type $command &>/dev/null || die "No such command: $command"
 # du.  Restic outputs its own duration, so there's no reason to
 # duplicate that, but it might be useful to know how much extra time
 # is taken by running du before and after.
-date_before=$(date +%s)
+date_before=$(date)
 du_enabled && du_before=$(repo_du)
 
 # Run command (backup, forget, prune, etc.)
@@ -498,7 +461,7 @@ $command || die "$command failed."
 
 # Log after command
 du_enabled && du_after=$(repo_du)
-date_after=$(date +%s)
+date_after=$(date)
 duration=$(human_duration "$date_before" "$date_after")
 
 if du_enabled

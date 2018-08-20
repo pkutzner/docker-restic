@@ -26,8 +26,8 @@ ENV RESTIC_CLEANUP_OPTIONS="--prune"
 # Default interval times can be set in cron expression
 # Fire at 03:15 every day
 ENV CRON_BACKUP_EXPRESSION="0 * * * *"
-# Fire at 00:15 on the first day of every month
-ENV CRON_CLEANUP_EXPRESSION="15 0 * * *"
+# Fire at 15 minutes past the hour for hourly rotation
+ENV CRON_CLEANUP_EXPRESSION="15 * * * *"
 
 # Script and config
 ADD ./target/start_cron.sh /go/bin
@@ -36,7 +36,7 @@ ADD ./target/restic-runner /go/bin
 
 # Install the items
 RUN apk update \
-  && apk add bash bc ca-certificates coreutils wget supervisor gnupg unzip \
+  && apk add bash bc ca-certificates coreutils wget supervisor gnupg unzip util-linux \
   && update-ca-certificates \
   && wget -O /tmp/restic-${RESTIC_VERSION}.tar.gz "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic-${RESTIC_VERSION}.tar.gz" \
   && wget -O /tmp/rclone-${RCLONE_VERSION}-linux-amd64.zip "https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip" \
