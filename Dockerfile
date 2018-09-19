@@ -1,8 +1,8 @@
-FROM golang:1.10.3-alpine
+FROM golang:1.11-alpine
 MAINTAINER Preston Kutzner <shizzlecash@gmail.com>
 
 ENV RESTIC_VERSION="0.9.2"
-ENV RCLONE_VERSION="v1.42"
+ENV RCLONE_VERSION="v1.43.1"
 
 # Backup options
 ENV RESTIC_BACKUP_OPTIONS=""

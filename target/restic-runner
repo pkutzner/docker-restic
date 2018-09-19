@@ -291,6 +291,7 @@ function backup {
     #trap cleanup EXIT INT TERM
 
     restic backup \
+           --quiet \
            --one-file-system \
            --exclude-caches \
            $(exclude_if_present) \
@@ -366,6 +367,7 @@ function expire {
     # TODO: Make prune optional or separate.
     restic forget \
            $(tag) \
+           --quiet \
            --prune ${keep_policy[@]}
 }
 function restore {
