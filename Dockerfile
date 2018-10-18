@@ -31,7 +31,7 @@ ADD ./target/restic-runner /go/bin
 
 # Install the items
 RUN apk update \
-  && apk add bash bc ca-certificates coreutils wget supervisor gnupg unzip util-linux \
+  && apk add bash bc ca-certificates coreutils wget supervisor gnupg git unzip util-linux \
   && update-ca-certificates \
   && wget -O /tmp/restic-${RESTIC_VERSION}.tar.gz "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic-${RESTIC_VERSION}.tar.gz" \
   && wget -O /tmp/rclone-${RCLONE_VERSION}-linux-amd64.zip "https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip" \
