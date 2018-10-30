@@ -3,6 +3,7 @@ MAINTAINER Preston Kutzner <shizzlecash@gmail.com>
 
 ENV RESTIC_VERSION="0.9.3"
 ENV RCLONE_VERSION="v1.44"
+ENV DUMBINIT_VERSION="1.2.2"
 
 # Backup options
 ENV RESTIC_BACKUP_OPTIONS=""
@@ -33,8 +34,8 @@ ADD ./target/restic-runner /go/bin
 RUN apk update \
   && apk add bash bc ca-certificates coreutils wget supervisor gnupg git unzip util-linux \
   && update-ca-certificates \
-  && wget -O /tmp/restic-${RESTIC_VERSION}.tar.gz "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic-${RESTIC_VERSION}.tar.gz" \
-  && wget -O /tmp/rclone-${RCLONE_VERSION}-linux-amd64.zip "https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip" \
+  && wget -qO /tmp/restic-${RESTIC_VERSION}.tar.gz "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic-${RESTIC_VERSION}.tar.gz" \
+  && wget -qO /tmp/rclone-${RCLONE_VERSION}-linux-amd64.zip "https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip" \
   && tar -xf /tmp/restic-${RESTIC_VERSION}.tar.gz -C /tmp/ \
   && cd /tmp/restic-${RESTIC_VERSION} \
   && go run build.go \
@@ -45,8 +46,12 @@ RUN apk update \
   && chmod +x /go/bin/start_cron.sh \
   && cd / \
   && mkdir -p /var/log/supervisor \
-  && rm -rf /tmp/restic* /tmp/rclone* /var/cache/apk/*
+  && rm -rf /tmp/restic* /tmp/rclone* /var/cache/apk/* \
+  && wget -qO /usr/local/bin/dumb-init "https://github.com/Yelp/dumb-init/releases/download/v${DUMBINIT_VERSION}/dumb-init_${DUMBINIT_VERSION}_amd64" \
+  && chmod +x /usr/local/bin/dumb-init
 
 # Start the process
-CMD supervisord -c /etc/supervisord.conf
+#CMD supervisord -c /etc/supervisord.conf
 
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
