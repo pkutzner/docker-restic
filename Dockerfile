@@ -1,7 +1,7 @@
 FROM golang:1.11-alpine
 MAINTAINER Preston Kutzner <shizzlecash@gmail.com>
 
-ENV RESTIC_VERSION="0.9.3"
+ENV RESTIC_VERSION="0.9.4"
 ENV RCLONE_VERSION="v1.46"
 ENV DUMBINIT_VERSION="1.2.2"
 
