@@ -1,4 +1,4 @@
-FROM golang:1.11-alpine
+FROM golang:1.12-alpine
 MAINTAINER Preston Kutzner <shizzlecash@gmail.com>
 
 ENV RESTIC_VERSION="0.9.4"
@@ -15,6 +15,8 @@ ENV RESTIC_CLEANUP="true"
 # Base directory where rclone will look for its config
 #  e.g. $XDG_CONFIG_HOME/rclone/rclone.conf
 #ENV XDG_CONFIG_HOME="~/.config"
+ENV XDG_CACHE_HOME="/root/.config/cache"
+ENV RCLONE_FAST_LIST=true
 
 # Cleanup params
 ENV RESTIC_CLEANUP_OPTIONS="--prune"
@@ -32,7 +34,7 @@ ADD ./target/restic-runner /go/bin
 
 # Install the items
 RUN apk update \
-  && apk add bash bc ca-certificates coreutils fuse wget supervisor gnupg git unzip util-linux \
+  && apk add bash bc ca-certificates coreutils fuse wget supervisor gnupg git unzip util-linux tzdata \
   && update-ca-certificates \
   && wget -qO /tmp/restic-${RESTIC_VERSION}.tar.gz "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic-${RESTIC_VERSION}.tar.gz" \
   && wget -qO /tmp/rclone-${RCLONE_VERSION}-linux-amd64.zip "https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip" \
