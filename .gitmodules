@@ -1,0 +1,3 @@
+[submodule "restic-runner"]
+	path = restic-runner
+	url = https://github.com/alphapapa/restic-runner
